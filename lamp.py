@@ -159,3 +159,25 @@ def ilamp(data, data_proj, p, k=6):
 
     return np.dot(p - y_tilde, M) + x_tilde
 
+
+def refine_lamp(X, X_proj, max_iter=50, k=8):
+    tree = KDTree(X)
+    for i in range(max_iter):
+        for i in range(X.shape[0]):
+            p = X[i]
+            proj_p = X_proj[i]
+            # 1. take N(B(x))
+            dist, ind = tree.query([p], k=k)
+            ind = ind[0]
+            
+            # neighbors of the point in nD
+            neigh_bp = X[ind]
+
+            # where they project
+            neigh_p = X_proj[ind]
+
+            center = np.sum(neigh_p, axis=0)/neigh_p.shape[0]
+
+            # move the projected point a little in direction of the center
+            X_proj[i] += (center - proj_p)/10.0
+

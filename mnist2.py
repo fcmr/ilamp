@@ -13,6 +13,7 @@ from time import time
 from skimage.transform import resize
 from skimage import img_as_float
 
+from sklearn import manifold
 import lamp
 
 """
@@ -111,7 +112,7 @@ def plot_grid_samples(imgs, n_imgs):
 warnings.filterwarnings("ignore")
 
 # Will only load DATA_SIZE samples
-DATA_SIZE = 10000
+DATA_SIZE = 2000
 
 print("Loading datset")
 start = time()
@@ -129,28 +130,41 @@ print("\tNormalizing time: ", time() - start)
 
 # reshape images into arrays i.e. from a list of images to a list of
 # arrays
-X_base = np.reshape(X_base, (X_base.shape[0], X_base.shape[1]*X_base.shape[2]))
-X_base = X_base[0:DATA_SIZE]
+#X_base = np.reshape(X_base, (X_base.shape[0], X_base.shape[1]*X_base.shape[2]))
+#X_base = X_base[0:DATA_SIZE]
+#
+#start = time()
+#proj = lamp.lamp2d(X_base)
+#print("\tlamp projection time: ", time() - start)
 
-start = time()
-proj = lamp.lamp2d(X_base)
-print("\tlamp projection time: ", time() - start)
-
-plot_embedding(proj, y, X_base, "LAMP Projection")
+#plot_embedding(proj, y, X_base, "LAMP Projection")
 
 # propose new samples with iLAMP
-new_img = lamp.ilamp(X_base, proj, np.array([0.24,0.23]))
-plt.imshow(new_img.reshape((28, 28)))
-plt.show()
+#new_img = lamp.ilamp(X_base, proj, np.array([0.24,0.23]))
+#plt.imshow(new_img.reshape((28, 28)))
+#plt.show()
+#
+#new_img = lamp.ilamp(X_base, proj, np.array([0.95,0.72]))
+#plt.imshow(new_img.reshape((28, 28)))
+#plt.show()
+#
+#new_img = lamp.ilamp(X_base, proj, np.array([0.13 ,0.8]))
+#plt.imshow(new_img.reshape((28, 28)))
+#plt.show()
+#
+#new_img = lamp.ilamp(X_base, proj, np.array([0.95, 0.58]))
+#plt.imshow(new_img.reshape((28, 28)))
+#plt.show()
 
-new_img = lamp.ilamp(X_base, proj, np.array([0.95,0.72]))
-plt.imshow(new_img.reshape((28, 28)))
-plt.show()
+#start = time()
+#lamp.refine_lamp(X_base, proj)
+#print("\trefinement time: ", time() - start)
+#plot_embedding(proj, y, X_base, "LAMP Refined")
 
-new_img = lamp.ilamp(X_base, proj, np.array([0.13 ,0.8]))
-plt.imshow(new_img.reshape((28, 28)))
-plt.show()
 
-new_img = lamp.ilamp(X_base, proj, np.array([0.95, 0.58]))
-plt.imshow(new_img.reshape((28, 28)))
-plt.show()
+#tsne = manifold.TSNE(n_components=2, init='pca', random_state=0)
+#print("Computing TSNE embedding")
+#start = time()
+#X_tsne = tsne.fit_transform(X_base)
+#print("\ttsne.fit_transform time: ", time() - start)
+#plot_embedding(X_tsne, y, X_base, "tSNE")
