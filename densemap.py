@@ -49,7 +49,8 @@ x_intervals = np.linspace(xmin - 1e-5, xmax + 1e-5, num=grid_size + 1)
 y_intervals = np.linspace(ymin - 1e-5, ymax + 1e-5, num=grid_size + 1)
 
 for i in range(grid_size + 1):
-    plt.plot([x_intervals[i], x_intervals[i]], [y_intervals[0], y_inervals[-1]], color='black')
+    plt.plot([x_intervals[i], x_intervals[i]], [y_intervals[0], y_intervals[-1]], color='black')
+    plt.plot([x_intervals[0], x_intervals[-1]], [y_intervals[i], y_intervals[i]], color='black')
 plot_proj(proj, proj_colors)
 
 grid = np.zeros((grid_size, grid_size))
@@ -58,7 +59,8 @@ num_empty = 0
 for i in range(grid_size):
     #x_sub = proj[np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 1] < x_intervals[i +1])]
     idx_i = np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 0] < x_intervals[i + 1])
-    for j in range(grid_size):
+    #for j in range(grid_size):
+    for j in range(grid_size - 1, -1, -1):
         idx_j = np.logical_and(proj[:, 1] >= y_intervals[j], proj[:, 1] < y_intervals[j + 1])
         idx = np.logical_and(idx_i, idx_j)
         #sub = x_sub[np.logical_and(x_sub[:, 1] >= y_intervals[j], x_sub[:, 1] < y_intervals[j + 1])]
@@ -70,10 +72,10 @@ for i in range(grid_size):
             grid[i, j] = -1 
             num_empty += 1
             # generate sample with iLAMP at the center of the cell
-            x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
-            y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
-            new_sample = lamp.ilamp(X, proj, np.array([x_center, y_center]))
-            label = clf.predict([new_sample])[0]
+            #x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
+            #y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
+            #new_sample = lamp.ilamp(X, proj, np.array([x_center, y_center]))
+            #label = clf.predict([new_sample])[0]
 
             #dense_map[i, j] = np.array([0.0, 1.0, 0.0, 1.0])
 
@@ -102,7 +104,7 @@ for i in range(grid_size):
 print(num_empty)
 
 
-plt.imshow(np.flip(dense_map, axis=1))
+plt.imshow(np.flip(dense_map, axis=1), interpolation='none')
 plt.show()
 
 for i in range(grid_size):
@@ -121,7 +123,7 @@ for i in range(grid_size):
             dense_map[i, j] = np.array([0.0, 0.65, 1.0, 1.0])
 
 
-plt.imshow(np.flip(dense_map, axis=1))
+plt.imshow(np.flip(dense_map, axis=1), interpolation='none')
 plt.show()
 
 
