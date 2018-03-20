@@ -51,16 +51,16 @@ def main():
     ymin = np.min(proj[:, 1])
     ymax = np.max(proj[:, 1])
 
-    grid_size = 15
+    grid_size = 15 
 
     x_intervals = np.linspace(xmin - 1e-5, xmax + 1e-5, num=grid_size + 1)
     y_intervals = np.linspace(ymin - 1e-5, ymax + 1e-5, num=grid_size + 1)
 
     print("Plotting LAMP projection..")
     start = time()
-    for i in range(grid_size + 1):
-        plt.plot([x_intervals[i], x_intervals[i]], [y_intervals[0], y_intervals[-1]], color='black')
-        plt.plot([x_intervals[0], x_intervals[-1]], [y_intervals[i], y_intervals[i]], color='black')
+    #for i in range(grid_size + 1):
+    #    plt.plot([x_intervals[i], x_intervals[i]], [y_intervals[0], y_intervals[-1]], color='black')
+    #    plt.plot([x_intervals[0], x_intervals[-1]], [y_intervals[i], y_intervals[i]], color='black')
 
     plot_proj(proj, proj_colors)
     print("\tPlotting finished: ", time() - start)
@@ -71,6 +71,7 @@ def main():
     grid = np.zeros((grid_size, grid_size))
     dense_map = np.ones((grid_size, grid_size, 4))
     num_empty = 0
+    empty_cells = []
     for i in range(grid_size):
         #x_sub = proj[np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 1] < x_intervals[i +1])]
         idx_i = np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 0] < x_intervals[i + 1])
@@ -84,8 +85,9 @@ def main():
 
             if proj_sub.shape[0] == 0:
                 # no samples in this tile, mark it as -1 
-                grid[i, j] = -1 
+                grid[j, i] = -1 
                 num_empty += 1
+                empty_cells.append((j, i))
                 # generate sample with iLAMP at the center of the cell
                 #x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
                 #y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
@@ -109,13 +111,13 @@ def main():
                 # all num_zeros -> 0.0
                 # something like this should work:
                 # 0.5 + (num_ones - num_zeros)/2*(num_ones + num_zeros)
-                grid[i, j] = 0.5 + (num_ones - num_zeros)/(2*(num_ones + num_zeros))
+                grid[j, i] = 0.5 + (num_ones - num_zeros)/(2*(num_ones + num_zeros))
 
                 alpha = abs(num_ones - num_zeros)/(num_ones + num_zeros)
                 if num_ones > num_zeros:
-                    dense_map[i, j] = np.array([1.0, 0.0, 0.0, alpha])
+                    dense_map[j, i] = np.array([1.0, 0.0, 0.0, alpha])
                 else:
-                    dense_map[i, j] = np.array([0.0, 0.0, 1.0, alpha])
+                    dense_map[j, i] = np.array([0.0, 0.0, 1.0, alpha])
 
     print("\tDiscrete grid finished: ", time() - start)
     print("\tNumber of empty (blank) cells: ", num_empty)
@@ -132,20 +134,32 @@ def main():
 
     print("Filling empty cells...")
     start = time()
-    for i in range(grid_size):
-        for j in range(grid_size):
-            if grid[i, j] != -1:
-                continue
-            # generate sample with iLAMP at the center of the cell
-            x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
-            y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
-            new_sample = lamp.ilamp(X, proj, np.array([x_center, y_center]))
-            label = clf.predict([new_sample])[0]
+    for (j, i) in empty_cells:
+        # generate sample with iLAMP at the center of the cell
+        x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
+        y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
+        new_sample = lamp.ilamp(X, proj, np.array([x_center, y_center]))
+        label = clf.predict([new_sample])[0]
+        if label == 1:
+            dense_map[j, i] = np.array([1.0, 0.65, 0.0, 1.0])
+        else:
+            dense_map[j, i] = np.array([0.0, 0.65, 1.0, 1.0])
 
-            if label == 1:
-                dense_map[i, j] = np.array([1.0, 0.65, 0.0, 1.0])
-            else:
-                dense_map[i, j] = np.array([0.0, 0.65, 1.0, 1.0])
+
+    #for i in range(grid_size):
+    #    for j in range(grid_size):
+    #        if grid[j, i] != -1:
+    #            continue
+    #        # generate sample with iLAMP at the center of the cell
+    #        x_center = (x_intervals[i] + x_intervals[i + 1])*0.5
+    #        y_center = (y_intervals[j] + y_intervals[j + 1])*0.5
+    #        new_sample = lamp.ilamp(X, proj, np.array([x_center, y_center]))
+    #        label = clf.predict([new_sample])[0]
+
+    #        if label == 1:
+    #            dense_map[j, i] = np.array([1.0, 0.65, 0.0, 1.0])
+    #        else:
+    #            dense_map[j, i] = np.array([0.0, 0.65, 1.0, 1.0])
 
 
     print("\tFinished filling empty cells: ", time() - start)
@@ -159,7 +173,6 @@ def main():
     plt.clf()
     print("\tFinished plotting densemap: ", time() - start)
     #plt.show()
-
 
 if __name__ == "__main__":
     main()
