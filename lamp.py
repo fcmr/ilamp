@@ -56,12 +56,15 @@ def force_method(X, init='random', delta_frac=10.0, max_iter=50):
 
 # In my tests, this method worked reasonably well when data was normalized
 # in range [0,1]. 
-def lamp2d(X, ctrl_pts_idx=None):
+def lamp2d(X, ctrl_pts_idx=None, num_ctrl_pts=None):
     # k: the number of control points
     # LAMP paper argues that few control points are needed. sqrt(|X|) is used
     # here as it the necessary number for other methods
     if ctrl_pts_idx is None:
-        k = int(np.sqrt(X.shape[0]))
+        if num_ctrl_pts is None:
+            k = int(np.sqrt(X.shape[0]))
+        else:
+            k = num_ctrl_pts
         ctrl_pts_idx = np.random.randint(0, X.shape[0], k)
 
     X_s = X[ctrl_pts_idx]
@@ -112,6 +115,8 @@ def lamp2d(X, ctrl_pts_idx=None):
         # 6. Compute the mapping (x - x_tilde)M + y_tilde
         X_proj[idx] = np.dot(X[idx] - x_tilde, M) + y_tilde
 
+
+    X_proj = (X_proj - X_proj.min(axis=0)) / (X_proj.max(axis=0) - X_proj.min(axis=0))
     return X_proj
 
 def ilamp(data, data_proj, p, k=6):
