@@ -83,34 +83,37 @@ def save_projections(X, num_ctrl_pts, num_neighbors):
             plot_projection(proj, y, "LAMP Refined - {} {}".format(nctrl, k), save=True)
 
 
+def main():
+    # Will only load DATA_SIZE samples
+    DATA_SIZE = 2000
 
-# Will only load DATA_SIZE samples
-DATA_SIZE = 2000
+    print("Loading datset")
+    start = time()
+    # TODO: shuffle data
+    X_orig, y = load()
+    print("\tLoading time: ", time() - start)
 
-print("Loading datset")
-start = time()
-# TODO: shuffle data
-X_orig, y = load()
-print("\tLoading time: ", time() - start)
+    # TODO: resize? 
+    # tsne on 28x28 images is too slow and returns bad embeddings, test on LAMP
+    print("Normalizing...")
+    start = time()
+    X_base = normalize_imgs(X_orig)
+    print("\tNormalizing time: ", time() - start)
 
-# TODO: resize? 
-# tsne on 28x28 images is too slow and returns bad embeddings, test on LAMP
-print("Normalizing...")
-start = time()
-X_base = normalize_imgs(X_orig)
-print("\tNormalizing time: ", time() - start)
+    # reshape images into arrays i.e. from a list of images to a list of
+    # arrays
+    X_base = np.reshape(X_base, (X_base.shape[0], X_base.shape[1]*X_base.shape[2]))
+    X_base = X_base[0:DATA_SIZE]
+    y = y[:DATA_SIZE]
 
-# reshape images into arrays i.e. from a list of images to a list of
-# arrays
-X_base = np.reshape(X_base, (X_base.shape[0], X_base.shape[1]*X_base.shape[2]))
-X_base = X_base[0:DATA_SIZE]
-y = y[:DATA_SIZE]
+    ctrl_pts = [int(np.sqrt(X_base.shape[0])), 100, 150, 200, 250, 300, 350]
+    num_neighbors = [8, 12, 16, 20]
 
+    save_projections(X_base, ctrl_pts, num_neighbors)
 
-ctrl_pts = [int(np.sqrt(X_base.shape[0])), 100, 150, 200, 250, 300, 350]
-num_neighbors = [8, 12, 16, 20]
+if __name__ == "__main__":
+    main()
 
-save_projections(X_base, ctrl_pts, num_neighbors)
 
 #for k in [int(np.sqrt(X_base.shape[0])), 100, 150, 200, 250, 300, 350]:
 #    start = time()

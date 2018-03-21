@@ -18,6 +18,8 @@ def plot_proj(X, colors):
     #plt.show()
 
 def main():
+    GRID_SIZE = 500 
+
     # 1. loads a 2-class dataset
     print("Loading data...")
     start = time()
@@ -31,10 +33,7 @@ def main():
     clf = linear_model.LogisticRegression()
     clf.fit(X, y)
     print("\tTraining finished: ", time() - start)
-
-
     #print(clf.score(X, y))
-
 
     # 3. Computes LAMP projection:
     print("Projecting points...")
@@ -44,21 +43,18 @@ def main():
     colors = ['blue', 'red']
     proj_colors = [colors[i] for i in y]
 
-
     # limits of the projection
     xmin = np.min(proj[:, 0])
     xmax = np.max(proj[:, 0])
     ymin = np.min(proj[:, 1])
     ymax = np.max(proj[:, 1])
 
-    grid_size = 15 
-
-    x_intervals = np.linspace(xmin - 1e-5, xmax + 1e-5, num=grid_size + 1)
-    y_intervals = np.linspace(ymin - 1e-5, ymax + 1e-5, num=grid_size + 1)
+    x_intervals = np.linspace(xmin - 1e-5, xmax + 1e-5, num=GRID_SIZE + 1)
+    y_intervals = np.linspace(ymin - 1e-5, ymax + 1e-5, num=GRID_SIZE + 1)
 
     print("Plotting LAMP projection..")
     start = time()
-    #for i in range(grid_size + 1):
+    #for i in range(GRID_SIZE + 1):
     #    plt.plot([x_intervals[i], x_intervals[i]], [y_intervals[0], y_intervals[-1]], color='black')
     #    plt.plot([x_intervals[0], x_intervals[-1]], [y_intervals[i], y_intervals[i]], color='black')
 
@@ -68,15 +64,15 @@ def main():
 
     print("Creating discrete grid...")
     start = time()
-    grid = np.zeros((grid_size, grid_size))
-    dense_map = np.ones((grid_size, grid_size, 4))
+    grid = np.zeros((GRID_SIZE, GRID_SIZE))
+    dense_map = np.ones((GRID_SIZE, GRID_SIZE, 4))
     num_empty = 0
     empty_cells = []
-    for i in range(grid_size):
+    for i in range(GRID_SIZE):
         #x_sub = proj[np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 1] < x_intervals[i +1])]
         idx_i = np.logical_and(proj[:, 0] >= x_intervals[i], proj[:, 0] < x_intervals[i + 1])
-        #for j in range(grid_size):
-        for j in range(grid_size):
+        #for j in range(GRID_SIZE):
+        for j in range(GRID_SIZE):
             idx_j = np.logical_and(proj[:, 1] >= y_intervals[j], proj[:, 1] < y_intervals[j + 1])
             idx = np.logical_and(idx_i, idx_j)
             #sub = x_sub[np.logical_and(x_sub[:, 1] >= y_intervals[j], x_sub[:, 1] < y_intervals[j + 1])]
@@ -146,8 +142,8 @@ def main():
             dense_map[j, i] = np.array([0.0, 0.65, 1.0, 1.0])
 
 
-    #for i in range(grid_size):
-    #    for j in range(grid_size):
+    #for i in range(GRID_SIZE):
+    #    for j in range(GRID_SIZE):
     #        if grid[j, i] != -1:
     #            continue
     #        # generate sample with iLAMP at the center of the cell

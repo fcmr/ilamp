@@ -109,24 +109,29 @@ def plot_grid_samples(imgs, n_imgs):
     plt.title('Digits')
     plt.show()
 
-warnings.filterwarnings("ignore")
 
-# Will only load DATA_SIZE samples
-DATA_SIZE = 2000
+def main():
+    warnings.filterwarnings("ignore")
 
-print("Loading datset")
-start = time()
-# TODO: shuffle data
-X_orig, y = load()
-print("\tLoading time: ", time() - start)
+    # Will only load DATA_SIZE samples
+    DATA_SIZE = 2000
 
-# TODO: resize? 
-# tsne on 28x28 images is too slow and returns bad embeddings, test on LAMP
-print("Normalizing...")
-start = time()
-X_base = normalize_imgs(X_orig)
-print("\tNormalizing time: ", time() - start)
-#plot_grid_samples(X_base, 20)
+    print("Loading datset")
+    start = time()
+    # TODO: shuffle data
+    X_orig, y = load()
+    print("\tLoading time: ", time() - start)
+
+    # TODO: resize? 
+    # tsne on 28x28 images is too slow and returns bad embeddings, test on LAMP
+    print("Normalizing...")
+    start = time()
+    X_base = normalize_imgs(X_orig)
+    print("\tNormalizing time: ", time() - start)
+    #plot_grid_samples(X_base, 20)
+
+if __name__ == "__main__":
+    main()
 
 # reshape images into arrays i.e. from a list of images to a list of
 # arrays
