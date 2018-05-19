@@ -16,31 +16,47 @@ SAMPLES_PER_CELL = 5
 np.random.seed(0)
 
 def S(c, d):
-    # Sa: dark red rgb(0.372, 0.098, 0.145) - hsv(0.972, 0.74, 0.37)
-    Sa = 0.74
-    # Sb: dark gray rgb(0.31, 0.31, 0.31) - hsv(0.0, 0.0, 0.31)
-    Sb = 0.0
-    # Sc: half gray rgb(0.5, 0.5, 0.5) - hsv(0.0, 0.0, 0.5)
-    Sc = 0.0
-    # Sd: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
-    Sd = 1.0
     if d <= 0.5:
+        # Sa: dark red rgb(0.372, 0.098, 0.145) - hsv(0.972, 1.0, 0.5)
+        Sa = 1.0
+        # Sb: dark gray rgb(0.2, 0.2, 0.2) - hsv(0.0, 0.0, 0.2)
+        Sb = 0.0
+        # Sc: half gray rgb(0.5, 0.5, 0.5) - hsv(0.0, 0.0, 0.5)
+        Sc = 0.0
+        # Sd: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
+        Sd = 1.0
         return (Sa*c + Sb*(1.0 - c))*(1 - 2*d) + (Sd*c + Sc*(1.0 - c))*(2*d)
     else:
+        # Sa: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
+        Sa = 1.0
+        # Sb: half gray rgb(0.5, 0.5, 0.5) - hsv(0.0, 0.0, 0.5)
+        Sb = 0.0
+        # Sc: light gray rgb(0.8, 0.8, 0.8) - hsv(0.0, 0.0, 0.8)
+        Sc = 0.0
+        # Sd: bright pink rgb(? , ?, ?) - hsv(0.0, 0.2, 1.0)
+        Sd = 0.2
         return (Sa*c + Sb*(1.0 - c))*(2.0 - 2.0*d) + (Sd*c + Sc*(1.0 - c))*(2*d - 1)
 
 def V(c, d):
-    # Sa: dark red rgb(0.372, 0.098, 0.145) - hsv(0.972, 0.74, 0.37)
-    Va = 0.37
-    # Sb: dark gray rgb(0.31, 0.31, 0.31) - hsv(0.0, 0.0, 0.31)
-    Vb = 0.31
-    # Sc: half gray rgb(0.7, 0.7, 0.7) - hsv(0.0, 0.0, 0.5)
-    Vc = 0.5
-    # Sd: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
-    Vd = 1.0
     if d <= 0.5:
+        # Va: dark red rgb(0.372, 0.098, 0.145) - hsv(0.972, 1.0, 0.5)
+        Va = 0.5
+        # Vb: dark gray rgb(0.2, 0.2, 0.2) - hsv(0.0, 0.0, 0.2)
+        Vb = 0.2
+        # Vc: half gray rgb(0.5, 0.5, 0.5) - hsv(0.0, 0.0, 0.5)
+        Vc = 0.5
+        # Vd: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
+        Vd = 1.0
         return (Va*c + Vb*(1.0 - c))*(1 - 2*d) + (Vd*c + Vc*(1.0 - c))*(2*d)
     else:
+        # Va: pure red rgb(1.0, 0.0, 0.0) - hsv(0.0, 1.0, 1.0)
+        Va = 1.0
+        # Vb: half gray rgb(0.5, 0.5, 0.5) - hsv(0.0, 0.0, 0.5)
+        Vb = 0.5
+        # Vc: light gray rgb(0.8, 0.8, 0.8) - hsv(0.0, 0.0, 0.8)
+        Vc = 0.8
+        # Vd: bright pink rgb(? , ?, ?) - hsv(0.0, 0.2, 1.0)
+        Vd = 1.0
         return (Va*c + Vb*(1.0 - c))*(2.0 - 2.0*d) + (Vd*c + Vc*(1.0 - c))*(2*d - 1)
 
 # simple plot_embeddings: work on something fancier later
@@ -365,6 +381,13 @@ def DenseMapHSVNew(X, proj, smap, cells, clf, num_per_cell=1):
         for col in range(gridsz):
             if len(cells[row][col]) >= num_per_cell:
                 continue
+
+            if len(cells[row][col]) != 0:
+                cmap = [0.65, 0.0]
+            else:
+                cmap = [0.558, 0.108]
+
+
             X_sub = [x for x in X[cells[row][col]]]
             limits = [x_intrvls[col], y_intrvls[row], x_intrvls[col + 1], y_intrvls[row + 1]]
 
@@ -496,26 +519,22 @@ def main():
     #        plt.clf()
     #        print("\tFinished plotting dense grid: ", time() - start)
 
-    
+    print("Creating sparse grid hsv...")
+    start = time()
+    sparse_map = SparseMapHSVNew(X, cells, clf, 1)
+    print("\tFinished computing sparse grid hsv: ", time() - start)
+
+    print("Plotting sparse grid...")
+    start = time()
+    tmp_sparse = np.flip(sparse_map, axis=0)
+    plt.imshow(hsv_to_rgb(tmp_sparse), interpolation='none')
+    plt.savefig("new_hsv/sparse_map_hsv_" + str(1) + "_samples.png")
+    plt.clf()
+    print("\tFinished plotting sparse grid: ", time() - start)
     for i in [1, 5, 10, 15]:
-        print("Creating sparse grid hsv...")
-        start = time()
-        sparse_map = SparseMapHSVNew(X, cells, clf, i)
-        print("\tFinished computing sparse grid hsv: ", time() - start)
-
-        print("Plotting sparse grid...")
-        start = time()
-        tmp_sparse = np.flip(sparse_map, axis=0)
-        plt.imshow(hsv_to_rgb(tmp_sparse), interpolation='none')
-        plt.savefig("new_hsv/sparse_map_hsv_" + str(i) + "_samples.png")
-        plt.clf()
-        print("\tFinished plotting sparse grid: ", time() - start)
-
         print("Creating dense grid hsv " + str(i) + " ...")
         start = time()
         dense_map = DenseMapHSVNew(X, proj, sparse_map, cells, clf, i)
-        #dense_map[:, :, 2] = normalize(dense_map[:, :, 2])
-        #dense_map[:, :, 1] = normalize(dense_map[:, :, 1])
         print("\tFinished computing dense grid: ", time() - start)
 
         print("Plotting dense grid...")
