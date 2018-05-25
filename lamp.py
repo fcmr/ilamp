@@ -3,6 +3,7 @@ from scipy.spatial import distance
 from sklearn.neighbors import KDTree
 
 
+#np.random.seed(0)
 # Forced projection method as decribed in the paper "On improved projection 
 # techniques to support visual exploration of multi-dimensional data sets"
 def force_method(X, init='random', delta_frac=10.0, max_iter=50):
@@ -13,7 +14,7 @@ def force_method(X, init='random', delta_frac=10.0, max_iter=50):
     # else if init == ' PCA':
     #   X_proj = PCA(X)
 
-    vec_dist = distance.pdist(X, 'sqeuclidean')
+    vec_dist = distance.pdist(X, 'euclidean')
     dmin = np.min(vec_dist)
     dmax = np.max(vec_dist)
     dist_matrix = distance.squareform(vec_dist)
@@ -37,7 +38,7 @@ def force_method(X, init='random', delta_frac=10.0, max_iter=50):
                 #    continue
 
                 v = q_prime - x_prime
-                dist_xq = distance.sqeuclidean(x_prime, q_prime)
+                dist_xq = distance.euclidean(x_prime, q_prime)
                 delta = (dist_matrix[i, j] - dmin)/dist_diff - dist_xq
                 # FIXME the algorithm desbribed in the paper states:
                 # "move q_prime in the direction of v by a fraction of delta"
@@ -56,7 +57,7 @@ def force_method(X, init='random', delta_frac=10.0, max_iter=50):
 
 # In my tests, this method worked reasonably well when data was normalized
 # in range [0,1]. 
-def lamp2d(X, ctrl_pts_idx=None, num_ctrl_pts=None):
+def lamp2d(X, num_ctrl_pts=None, delta=None, ctrl_pts_idx=None):
     # k: the number of control points
     # LAMP paper argues that few control points are needed. sqrt(|X|) is used
     # here as it the necessary number for other methods
@@ -68,7 +69,9 @@ def lamp2d(X, ctrl_pts_idx=None, num_ctrl_pts=None):
         ctrl_pts_idx = np.random.randint(0, X.shape[0], k)
 
     X_s = X[ctrl_pts_idx]
-    Y_s = force_method(X_s)
+    if delta == None:
+        delta = 10.0
+    Y_s = force_method(X_s, delta_frac=delta)
 
     X_proj = np.zeros((X.shape[0], 2))
     # LAMP algorithm
