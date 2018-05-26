@@ -34,7 +34,7 @@ class Clf(Enum):
     CNN = 2
 
 # List of parameters
-GRID_SIZE = 100 
+GRID_SIZE = 50 
 DATASET = Dataset.TOY
 CLF = Clf.LOGISTIC_REGRESSION
 
@@ -266,12 +266,13 @@ def DenseMap(X, proj, smap, cells, clf, num_per_cell, clf_type, in_shape):
         print("\t\t\tMAX_PTS == N")
 
     avg_pts = total_pts/(GRID_SIZE*GRID_SIZE)
+    print("avg_pts: ", avg_pts)
 
     cmap = CMAP_SYN[NUM_CLASSES]
     for row in range(gridsz):
         for col in range(gridsz):
-            if len(cells[row][col]) >= num_per_cell:
-                continue
+            #if len(cells[row][col]) >= num_per_cell:
+            #    continue
 
             # If there is at least one original sample in this cell, the
             # original colormap is used
@@ -281,14 +282,16 @@ def DenseMap(X, proj, smap, cells, clf, num_per_cell, clf_type, in_shape):
                 cmap = CMAP_SYN[NUM_CLASSES]
 
             X_sub = [x for x in X[cells[row][col]]]
-            limits = [x_intrvls[col], y_intrvls[row], x_intrvls[col + 1], y_intrvls[row + 1]]
-
             num_samples = num_per_cell - len(cells[row][col])
-            sampled = SampleSquare(num_samples, limits)
-            for (x, y) in sampled:
-                X_sub.append(lamp.ilamp(X, proj, np.array([x, y])))
 
-            num_pts = num_per_cell 
+            num_pts = len(cells[row][col])
+            if num_samples > 0:
+                limits = [x_intrvls[col], y_intrvls[row], x_intrvls[col + 1], y_intrvls[row + 1]]
+                sampled = SampleSquare(num_samples, limits)
+                for (x, y) in sampled:
+                    X_sub.append(lamp.ilamp(X, proj, np.array([x, y])))
+
+                num_pts = num_per_cell 
 
             if in_shape != None:
                 X_sub = np.reshape(X_sub, (num_pts,) + in_shape)
@@ -340,7 +343,7 @@ def main():
     ctrl_pts = None
     delta = None 
 
-    directory = DATASET.name + '/'
+    directory = DATASET.name +  '/'
 
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -493,7 +496,7 @@ def main():
         plt.imshow(hsv_to_rgb(tmp_dense), interpolation='none')
         fig_title = "{}x{} DenseMap ({} samples)".format(GRID_SIZE, GRID_SIZE, i)
         plt.title(fig_title)
-        fig_name = directory + DATASET.name + "_{}x{}_dense_map.png".format(GRID_SIZE, GRID_SIZE)
+        fig_name = directory + DATASET.name + "_{}x{}_N_{}_dense_map.png".format(GRID_SIZE, GRID_SIZE, i)
         plt.savefig(fig_name)
         plt.clf()
         print("\tFinished plotting dense grid: ", time() - start)
